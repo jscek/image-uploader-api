@@ -9,25 +9,25 @@ import {
   Res,
   UploadedFile,
   UseInterceptors,
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ImagesService } from './images.service';
-import { Request, Response } from 'express';
-import { nanoid } from 'nanoid';
-import { diskStorage } from 'multer';
-@Controller('images')
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ImagesService } from "./images.service";
+import { Request, Response } from "express";
+import { nanoid } from "nanoid";
+import { diskStorage } from "multer";
+@Controller("images")
 export class ImagesController {
   constructor(private imagesService: ImagesService) {}
 
   private static imagesFilter(
     _req: Request,
     file: Express.Multer.File,
-    callback: (error: Error | null, acceptFile: boolean) => void,
+    callback: (error: Error | null, acceptFile: boolean) => void
   ): void {
-    if (file.mimetype != 'image/jpeg') {
+    if (file.mimetype != "image/jpeg") {
       return callback(
-        new HttpException('File is not image', HttpStatus.FORBIDDEN),
-        false,
+        new HttpException("File is not image", HttpStatus.FORBIDDEN),
+        false
       );
     }
     callback(null, true);
@@ -36,7 +36,7 @@ export class ImagesController {
   private static filename(
     _req: Request,
     _file: Express.Multer.File,
-    callback: (error: Error | null, filename: string) => void,
+    callback: (error: Error | null, filename: string) => void
   ) {
     const filename = nanoid();
 
@@ -45,13 +45,13 @@ export class ImagesController {
 
   @Put()
   @UseInterceptors(
-    FileInterceptor('file', {
+    FileInterceptor("file", {
       fileFilter: ImagesController.imagesFilter,
       storage: diskStorage({
         filename: ImagesController.filename,
         destination: ImagesService.imagesDestination,
       }),
-    }),
+    })
   )
   upload(@Req() req: Request, @UploadedFile() file: Express.Multer.File) {
     const downloadUrl = req.path + file.filename;
@@ -59,14 +59,14 @@ export class ImagesController {
     return { downloadUrl };
   }
 
-  @Get(':id')
-  download(@Param('id') id: string, @Res() res: Response) {
+  @Get(":id")
+  download(@Param("id") id: string, @Res() res: Response) {
     const file = this.imagesService.download(id);
 
-    file.on('error', () => {
+    file.on("error", () => {
       res.status(HttpStatus.NOT_FOUND).send({
         stattusCode: HttpStatus.NOT_FOUND,
-        message: 'Image not found',
+        message: "Image not found",
       });
     });
 
